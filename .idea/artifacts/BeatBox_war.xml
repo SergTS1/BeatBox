@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="BeatBox:war">
+    <output-path>$PROJECT_DIR$/BeatBox/BeatBox/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>BeatBox</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="BeatBox.war">
+      <element id="artifact" artifact-name="BeatBox:war exploded" />
+    </root>
+  </artifact>
+</component>
