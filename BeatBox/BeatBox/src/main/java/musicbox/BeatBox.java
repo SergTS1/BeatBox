@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
 import java.util.ArrayList;
 
 public class BeatBox {
@@ -33,6 +34,10 @@ public class BeatBox {
         checkBoxArrayList = new ArrayList<JCheckBox>();
         Box buttonBox = new Box(BoxLayout.Y_AXIS);
 
+        JButton reset = new JButton("New Track");
+        reset.addActionListener(new MyResetListener());
+        buttonBox.add(reset);
+
         JButton start = new JButton("Start");
         start.addActionListener(new MyStartListener());
         buttonBox.add(start);
@@ -48,6 +53,14 @@ public class BeatBox {
         JButton downTempo = new JButton("Tempo Down");
         downTempo.addActionListener(new MyDownTempoListener());
         buttonBox.add(downTempo);
+
+        JButton serialize = new JButton("Serialize");
+        serialize.addActionListener(new MySendListener());
+        buttonBox.add(serialize);
+
+        JButton restore = new JButton("Restore");
+        restore.addActionListener(new MyReadInListener());
+        buttonBox.add(restore);
 
         Box nameBox = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < 16; i++) {
@@ -151,6 +164,60 @@ public class BeatBox {
         }
     }
 
+    // Внутренний класс для сериализации и десериализации трека
+    public class MySendListener implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+            boolean[] checkboxState = new boolean[256];
+            for (int i = 0; i < 256; i++) {
+                JCheckBox checkBox = (JCheckBox) checkBoxArrayList.get(i);
+                if(checkBox.isSelected()) {
+                    checkboxState[i] = true;
+                }
+            }
+            try {
+                FileOutputStream outputStream = new FileOutputStream(new File("/Users/sergey/Checkbox.ser"));
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                objectOutputStream.writeObject(checkboxState);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println("success");
+        }
+    }
+
+    // Внутренний класс для десериализации трека
+    public class MyReadInListener implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+            boolean[] checkboxState = null;
+            try {
+                FileInputStream inputStream = new FileInputStream(new File("/Users/sergey/Checkbox.ser"));
+                ObjectInputStream is = new ObjectInputStream(inputStream);
+                checkboxState = (boolean[]) is.readObject();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            for (int i = 0; i < 256; i++) {
+                JCheckBox checkBox = (JCheckBox) checkBoxArrayList.get(i);
+                if (checkboxState[i]) {
+                    checkBox.setSelected(true);
+                } else {
+                    checkBox.setSelected(false);
+                }
+            }
+            sequencer.stop();
+            buildTrackAndStart();
+        }
+    }
+
+    public class MyResetListener implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+            sequencer.stop();
+            for (int i = 0; i < 256; i++) {
+                JCheckBox checkBox = (JCheckBox) checkBoxArrayList.get(i);
+                checkBox.setSelected(false);
+            }
+        }
+    }
     public void makeTracks(int[] list) {
 
         for (int i = 0; i < 16; i++) {
